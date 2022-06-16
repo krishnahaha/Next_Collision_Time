@@ -1,0 +1,8 @@
+npart 100
+dim 3
+nColl 100
+nInit 1
+phi 0.0010
+vInit 1
+nCollSave 1000
+nCollIg 10000
