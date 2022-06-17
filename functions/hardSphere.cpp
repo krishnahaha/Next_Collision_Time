@@ -176,110 +176,72 @@ tuple<double, int, int, int> hardSphere::pwCollTime(int i, double globTime) {
   return pwReturn;
 }
 
-//////////////// imageFunction /////////////////
-/*
-void hardSphere::imageFunction(int j) {
-  int imgCnt;
-  imgCnt = 0;
-  for(int kk=0; kk<DIM; kk++) {
-    //Storing the initial positon of the particles.
-    imgPos[imgCnt*DIM + kk] = posVel[j*STRIDE+kk];
-  }
-  imgCnt++;
-  for (int k = -1; k<=1; k++) {
-    for (int l = -1; l<=1; l++) {
-      for(int m=-1; m<= 1; m++) {
-        if(k==0 and l==0 and m==0)  {
-          //Excluding original
-        }
-        else  {
-          for(int kk=0; kk<DIM; kk++) {
-            imgPos[imgCnt*DIM+kk] = posVel[j*STRIDE+kk] + k*edgeVec[kk] + l*edgeVec[1*DIM+kk] + m*edgeVec[2*DIM+kk];
-          } // kk ends
-          imgCnt++; //cout<<"\t"<<imgCnt;
-        }//exclude ends.
-      } // m ends.
-    } // l ends.
-  } // k ends
-}
-*/
 ////////////////// particleParticleColl ///////////////////
 
 tuple<double, int, int, int> hardSphere::ppCollTime(int i, int j, double globTime)  {
-  double rij2, vij2, bij, tmp, tmptmp, xrij, xvij, tmp1, tmp2, tnext,deltaT, fdotHs, fHs;
-  int i1=i, i2=j, i3=0;
+  double rij2, vij2, bij, xrij, yrij, zrij, xvij, yvij, zvij;
+  double tmp, tmp1, tmp2, tmptmp=infinity;
+  int imgCnt = 0, i3 = 0;
 
   auto start4 = std::chrono::system_clock::now();
-  //imgCseq.clear();
 
-  //Calculate the collision time for original position.
-  rij2 = 0,vij2 = 0,bij=0,tmp = 0,xrij = 0.0,xvij=0.0;
-  for(int k = 0; k<DIM; k++)  {
-    xrij = posVel[i*STRIDE + k] - posVel[j*STRIDE + k];
-    xvij = posVel[i*STRIDE + DIM + k] - posVel[j*STRIDE + DIM + k];
-    bij+=xvij*xrij;
-    rij2+=xrij*xrij; vij2+=xvij*xvij;
-  }
-  //Check if they are approaching.
-  if(bij >= 0)  {
-    tmp = infinity;
-  }
-  else if( rij2 <= 1) {
-    //check if overlapping.Make them to exchange their velocities by assigining the global Time as a time of collision.
-    tmp = globTime;
-    cout<<"\n\nOverlapping particles\ti= "<<i<<"\tj= "<<j<<"\tdistance: "<<(sqrt(rij2) - 1);
-  }
-  else if( (bij*bij - vij2*(rij2 - 1)) < 0 )  {
-    //Check if the discriminant is negative.
-    tmp = infinity;
-  }
-  else  {
-    //Calculate the smallest time for the two particles to have separation sigma.
-    tmp1 = rij2 - 1;
-    tmp2 = -bij + sqrt(bij*bij - vij2*tmp1);
-    tmp = globTime + (tmp1/tmp2);
-  }
+  //Calculate the collision time for original position and the minimum image in all the three directions.
+  for (int ii=0; ii<2; ii++)  {
+    xrij = posVel[i*STRIDE + 0] - posVel[j*STRIDE + 0];
+    xvij = posVel[i*STRIDE + DIM + 0] - posVel[j*STRIDE + DIM + 0];
+    if(ii==1)
+      xrij = xrij - boxLen*lround(xrij*boxLenInv);
 
-  //Calculate the collision time for minimum image position.
-  rij2 = 0,vij2 = 0,bij=0,tmptmp = 0,xrij = 0.0,xvij=0.0;
-  for(int k = 0; k<DIM; k++)  {
-    xrij = posVel[i*STRIDE + k] - posVel[j*STRIDE + k];
-    xrij = xrij - boxLen*lround(xrij*boxLenInv); //Minimum Image.
-    xvij = posVel[i*STRIDE + DIM + k] - posVel[j*STRIDE + DIM + k];
-    bij+=xvij*xrij;
-    rij2+=xrij*xrij; vij2+=xvij*xvij;
-  }
-  //Check if they are approaching.
-  if(bij >= 0)  {
-    tmptmp = infinity;
-    }
-  else if( rij2 <= 1-null) {
-    //check if overlapping.Make them to exchange their velocities by assigining the global Time as a time of collision.
-    tmptmp = globTime;
-    cout<<"\n\nOverlapping particles\ti= "<<i<<"\tj= "<<j<<"\tdistance: "<<(sqrt(rij2) - 1);
-  }
-  else if( (bij*bij - vij2*(rij2 - 1)) < 0 )  {
-    //Check if the discriminant is negative.
-    tmptmp = infinity;
-  }
-  else  {
-    //Calculate the smallest time for the two particles to have separation sigma.
-    tmp1 = rij2 - 1;
-    tmp2 = -bij + sqrt(bij*bij - vij2*tmp1);
-    tmptmp = globTime + (tmp1/tmp2);
-  }
+    for(int jj=0; jj<2; jj++) {
+      yrij = posVel[i*STRIDE + 1] - posVel[j*STRIDE + 1];
+      yvij = posVel[i*STRIDE + DIM+ 1] - posVel[j*STRIDE + DIM + 1];
+      if(jj==1)
+        yrij = yrij - boxLen*lround(yrij*boxLenInv);
 
-  //Comparing the collision times.
-  if(tmp<tmptmp)  {
-    tmptmp = tmp;
-    i3 = 1; //i3 == 1 stands for the minimum image.
-  }
+      for(int kk=0; kk<2; kk++) {
+        zrij = posVel[i*STRIDE + 2] - posVel[j*STRIDE + 2];
+        zvij = posVel[i*STRIDE + DIM + 2] - posVel[j*STRIDE + DIM + 2];
+        if(kk==1)
+          zrij = zrij - boxLen*lround(zrij*boxLenInv);
+
+        bij  = xvij*xrij + yvij*yrij + zvij*zrij;
+        rij2 = xrij*xrij + yrij*yrij + zrij*zrij;
+        vij2 = xvij*xvij + yvij*yvij + zvij*zvij;
+
+        //Check if they are approaching.
+        if(bij >= 0) {
+          tmp = infinity;
+        }
+        else if( rij2 <= 1-null) {
+          //check if overlapping.Make them to exchange their velocities by assigining the global Time as a time of collision.
+          tmp = globTime;
+          cout<<"\n\nOverlapping particles\ti= "<<i<<"\tj= "<<j<<"\tOvp dist: "<<(1-sqrt(rij2));
+        }
+        else if( (bij*bij - vij2*(rij2 - 1)) < 0 )  {
+          //Check if the discriminant is negative.
+          tmp = infinity;
+        }
+        else  {
+          //Calculate the smallest time for the two particles to have separation sigma.
+          tmp1 = rij2 - 1;
+          tmp2 = -bij + sqrt(bij*bij - vij2*tmp1);
+          tmp = globTime + (tmp1/tmp2);
+        }
+
+        //Comparing the collision times.
+        if(tmp<tmptmp)  {
+          tmptmp = tmp;
+          i3 = imgCnt;
+        }
+        imgCnt++;
+      }//kk ends.
+    }//jj ends.
+  }//ii ends.
 
   //Make a tuple out of these three and then return the value there.
-  ppReturn = make_tuple(tmptmp, i1, i2, i3 );
+  ppReturn = make_tuple(tmptmp, i, j, i3 );
   auto end4 = std::chrono::system_clock::now();
   ppCollTimeT += std::chrono::duration_cast<std::chrono::microseconds>(end4 - start4).count();
-
   return ppReturn;
 }
 
@@ -319,32 +281,45 @@ void hardSphere::collTableInit(double globTime) {
 
 //////////////// velUpdate //////////////////////
 void hardSphere::velUpdate(int i, int j, int imJ) {
-  double xrij, xvij, bij, rij2;
+  double rij2, vij2, bij, xrij, yrij, zrij, xvij, yvij, zvij;
+  int imx, imy, imz, imtmp;
+
   auto start5 = std::chrono::system_clock::now();
+  imz = imJ%2; imtmp = imJ/2;
+  imy = imtmp%2; imtmp = imtmp/2;
+  imx = imtmp%2;
+  //cout<<"\nImg index: "<<imJ;
+  //cout<<"\timz, imy, imx: "<<imz<<"\t"<<imy<<"\t"<<imx;
 
   //Velocity update between two particles i and j.
-  xrij = 0.0, xvij = 0.0, bij = 0, rij2 = 0.0;
-  for(int k=0; k<DIM; k++)  {
-    //Get the distance between the particle and the image.
-    xrij = posVel[i*STRIDE + k] - posVel[j*STRIDE + k];
-    if(imJ == 1){
-      xrij = xrij - boxLen*lround(xrij*boxLenInv);
-    }
-    xvij = posVel[i*STRIDE + DIM + k] - posVel[j*STRIDE + DIM + k];
-    bij += xrij*xvij; rij2 += xrij*xrij;
-  }
+  xrij = posVel[i*STRIDE + 0] - posVel[j*STRIDE + 0];
+  xvij = posVel[i*STRIDE + DIM + 0] - posVel[j*STRIDE + DIM + 0];
+  if(imx==1)
+    xrij = xrij - boxLen*lround(xrij*boxLenInv);
+
+  yrij = posVel[i*STRIDE + 1] - posVel[j*STRIDE + 1];
+  yvij = posVel[i*STRIDE + DIM + 1] - posVel[j*STRIDE + DIM + 1];
+  if(imy==1)
+    yrij = yrij - boxLen*lround(yrij*boxLenInv);
+
+  zrij = posVel[i*STRIDE + 2] - posVel[j*STRIDE + 2];
+  zvij = posVel[i*STRIDE + DIM + 2] - posVel[j*STRIDE + DIM + 2];
+  if(imz==1)
+    zrij = zrij - boxLen*lround(zrij*boxLenInv);
+
+  bij  = xvij*xrij + yvij*yrij + zvij*zrij;
+  rij2 = xrij*xrij + yrij*yrij + zrij*zrij;
   double temp1= bij/rij2;
-  for(int k = 0; k<DIM; k++)  {
-    xrij = posVel[i*STRIDE + k] - posVel[j*STRIDE + k];
-    if(imJ == 1)  {
-      xrij = xrij - boxLen*lround(xrij*boxLenInv);
-    }
-    posVel[i*STRIDE + DIM + k] -= (xrij*temp1);
-    posVel[j*STRIDE + DIM + k] +=  (xrij*temp1);
-  }
+
+  posVel[i*STRIDE + DIM + 0] -= (xrij*temp1);
+  posVel[j*STRIDE + DIM + 0] +=  (xrij*temp1);
+  posVel[i*STRIDE + DIM + 1] -= (yrij*temp1);
+  posVel[j*STRIDE + DIM + 1] +=  (yrij*temp1);
+  posVel[i*STRIDE + DIM + 2] -= (zrij*temp1);
+  posVel[j*STRIDE + DIM + 2] +=  (zrij*temp1);
+
   auto end5 = std::chrono::system_clock::now();
   velUpdateT += std::chrono::duration_cast<std::chrono::microseconds>(end5 - start5).count() ;
-
 }//vel update ends.
 
 ////////////////// collTableUpdate ///////////////
