@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
 
   //Create the class object for the hardSphere, a struct object for the parameter file and a FILE object for the input.
   hardSphere hs; struct PARAINPUT p; FILE *fpPara;
+  srand48(time(0));
   double saveTime=0.0;
   fpPara = fopen(argv[1], "r");
   if(fpPara==NULL)

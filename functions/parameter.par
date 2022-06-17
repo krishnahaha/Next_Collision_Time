@@ -1,6 +1,6 @@
-npart 100
+npart 1000
 dim 3
-nColl 100
+nColl 1000
 nInit 1
 phi 0.0010
 vInit 1

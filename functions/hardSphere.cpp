@@ -177,6 +177,7 @@ tuple<double, int, int, int> hardSphere::pwCollTime(int i, double globTime) {
 }
 
 //////////////// imageFunction /////////////////
+/*
 void hardSphere::imageFunction(int j) {
   int imgCnt;
   imgCnt = 0;
@@ -189,7 +190,7 @@ void hardSphere::imageFunction(int j) {
     for (int l = -1; l<=1; l++) {
       for(int m=-1; m<= 1; m++) {
         if(k==0 and l==0 and m==0)  {
-          /*Excluding original.*/
+          //Excluding original
         }
         else  {
           for(int kk=0; kk<DIM; kk++) {
@@ -201,80 +202,81 @@ void hardSphere::imageFunction(int j) {
     } // l ends.
   } // k ends
 }
-
+*/
 ////////////////// particleParticleColl ///////////////////
 
 tuple<double, int, int, int> hardSphere::ppCollTime(int i, int j, double globTime)  {
-  double rij2, vij2, bij, tmp, xrij, xvij, tmp1, tmp2, tnext,deltaT, fdotHs, fHs;
-  int i1, i2, i3;
+  double rij2, vij2, bij, tmp, tmptmp, xrij, xvij, tmp1, tmp2, tnext,deltaT, fdotHs, fHs;
+  int i1=i, i2=j, i3=0;
 
   auto start4 = std::chrono::system_clock::now();
-  imgCseq.clear();
+  //imgCseq.clear();
 
-  //Calculate the image of all j. They all will have same velocity.
-  imageFunction(j);
-
-  //Calculate the collision time for each i and imJ
-  for (int imJ = 0; imJ<27; imJ++)  {
-    rij2 = 0,vij2 = 0,bij=0,tmp = 0,xrij = 0.0,xvij=0.0;
-    for(int k = 0; k<DIM; k++)  {
-      xrij = posVel[i*STRIDE + k] - imgPos[imJ*DIM + k];
-
-      //Since velocity of all the images remains the same. Take it from there.
-      xvij = posVel[i*STRIDE + DIM + k] - posVel[j*STRIDE + DIM + k];
-      bij+=xvij*xrij;
-      rij2+=xrij*xrij; vij2+=xvij*xvij;
-    }
-
-    //Check if they are approaching.
-    if(bij >= 0)  {
-      tmp = infinity;
-      imgCseq[tmp] = tuple<int, int, int>(i, j, imJ);
-    }
-    else if( rij2 <= 1) {
-      //No need of && bij<0, it is already taken into account due to the else if condition.
-      //check if overlapping.Make them to exchange their velocities by assigining the global Time as a time of collision.
-      tmp = globTime;
-      cout<<"\n\nOverlapping particles\ti= "<<i<<"\tj= "<<j<<"\tdistance: "<<(sqrt(rij2) - 1);
-      imgCseq[tmp] = tuple<int, int, int>(i, j, imJ);
-    }
-    else if( (bij*bij - vij2*(rij2 - 1)) < 0 )  {
-      //Check if the discriminant is negative.
-      tmp = infinity; //cout<<"\t D<0";
-      imgCseq[tmp] = tuple<int, int, int>(i, j, imJ);
-    }
-    else
-    {
-      //Calculate the smallest time for the two particles to have separation sigma.
-      tmp1 = rij2 - 1; //cout<<"\ntmp1 "<<tmp1;
-      tmp2 = -bij + sqrt(bij*bij - vij2*tmp1); //cout<<"\t"<<tmp2;
-      tmp = globTime + (tmp1/tmp2); //cout<<"\t"<<tmp;
-      imgCseq[tmp] = tuple<int, int, int>(i, j, imJ);
-    }
-    /*
-    if(tmp < infinity)  {
-      //Overlap functions
-      deltaT  = tmp - globTime;
-      fdotHs  = deltaT*vij2 + bij;
-      fHs     = deltaT*deltaT*vij2 + 2*deltaT*bij + rij2 - 1;
-
-    if( fHs<= null && fdotHs<0 )  {
-        imgCseq[tmp] = tuple<int, int, int>(i, j, imJ);
-    }
-    else  {
+  //Calculate the collision time for original position.
+  rij2 = 0,vij2 = 0,bij=0,tmp = 0,xrij = 0.0,xvij=0.0;
+  for(int k = 0; k<DIM; k++)  {
+    xrij = posVel[i*STRIDE + k] - posVel[j*STRIDE + k];
+    xvij = posVel[i*STRIDE + DIM + k] - posVel[j*STRIDE + DIM + k];
+    bij+=xvij*xrij;
+    rij2+=xrij*xrij; vij2+=xvij*xvij;
+  }
+  //Check if they are approaching.
+  if(bij >= 0)  {
+    tmp = infinity;
+  }
+  else if( rij2 <= 1) {
+    //check if overlapping.Make them to exchange their velocities by assigining the global Time as a time of collision.
     tmp = globTime;
-    imgCseq[tmp] = tuple<int, int, int>(i, j, imJ);
-    }
-    */
-  }//image collision time completed.
+    cout<<"\n\nOverlapping particles\ti= "<<i<<"\tj= "<<j<<"\tdistance: "<<(sqrt(rij2) - 1);
+  }
+  else if( (bij*bij - vij2*(rij2 - 1)) < 0 )  {
+    //Check if the discriminant is negative.
+    tmp = infinity;
+  }
+  else  {
+    //Calculate the smallest time for the two particles to have separation sigma.
+    tmp1 = rij2 - 1;
+    tmp2 = -bij + sqrt(bij*bij - vij2*tmp1);
+    tmp = globTime + (tmp1/tmp2);
+  }
 
-  //Take the minimum of the collision time with the images.
-  tnext = imgCseq.begin()->first;
-  ijnext = imgCseq.begin()->second;
-  tie(i1, i2, i3) = imgCseq.begin()->second;
+  //Calculate the collision time for minimum image position.
+  rij2 = 0,vij2 = 0,bij=0,tmptmp = 0,xrij = 0.0,xvij=0.0;
+  for(int k = 0; k<DIM; k++)  {
+    xrij = posVel[i*STRIDE + k] - posVel[j*STRIDE + k];
+    xrij = xrij - boxLen*lround(xrij*boxLenInv); //Minimum Image.
+    xvij = posVel[i*STRIDE + DIM + k] - posVel[j*STRIDE + DIM + k];
+    bij+=xvij*xrij;
+    rij2+=xrij*xrij; vij2+=xvij*xvij;
+  }
+  //Check if they are approaching.
+  if(bij >= 0)  {
+    tmptmp = infinity;
+    }
+  else if( rij2 <= 1-null) {
+    //check if overlapping.Make them to exchange their velocities by assigining the global Time as a time of collision.
+    tmptmp = globTime;
+    cout<<"\n\nOverlapping particles\ti= "<<i<<"\tj= "<<j<<"\tdistance: "<<(sqrt(rij2) - 1);
+  }
+  else if( (bij*bij - vij2*(rij2 - 1)) < 0 )  {
+    //Check if the discriminant is negative.
+    tmptmp = infinity;
+  }
+  else  {
+    //Calculate the smallest time for the two particles to have separation sigma.
+    tmp1 = rij2 - 1;
+    tmp2 = -bij + sqrt(bij*bij - vij2*tmp1);
+    tmptmp = globTime + (tmp1/tmp2);
+  }
+
+  //Comparing the collision times.
+  if(tmp<tmptmp)  {
+    tmptmp = tmp;
+    i3 = 1; //i3 == 1 stands for the minimum image.
+  }
+
   //Make a tuple out of these three and then return the value there.
-  ppReturn = make_tuple(tnext, i1, i2, i3 );
-  //cout<<"\t tnext: "<<tnext; cout<<"\t ijnext: "<<ijnext.first<<"\t j "<<j<<"\t imJ  "<<ijnext.second<<"\t";
+  ppReturn = make_tuple(tmptmp, i1, i2, i3 );
   auto end4 = std::chrono::system_clock::now();
   ppCollTimeT += std::chrono::duration_cast<std::chrono::microseconds>(end4 - start4).count();
 
@@ -321,17 +323,22 @@ void hardSphere::velUpdate(int i, int j, int imJ) {
   auto start5 = std::chrono::system_clock::now();
 
   //Velocity update between two particles i and j.
-  imageFunction(j);
   xrij = 0.0, xvij = 0.0, bij = 0, rij2 = 0.0;
   for(int k=0; k<DIM; k++)  {
     //Get the distance between the particle and the image.
-    xrij = posVel[i*STRIDE + k] - imgPos[imJ*DIM + k];
+    xrij = posVel[i*STRIDE + k] - posVel[j*STRIDE + k];
+    if(imJ == 1){
+      xrij = xrij - boxLen*lround(xrij*boxLenInv);
+    }
     xvij = posVel[i*STRIDE + DIM + k] - posVel[j*STRIDE + DIM + k];
     bij += xrij*xvij; rij2 += xrij*xrij;
   }
   double temp1= bij/rij2;
   for(int k = 0; k<DIM; k++)  {
-    xrij = posVel[i*STRIDE + k] - imgPos[imJ*DIM + k];
+    xrij = posVel[i*STRIDE + k] - posVel[j*STRIDE + k];
+    if(imJ == 1)  {
+      xrij = xrij - boxLen*lround(xrij*boxLenInv);
+    }
     posVel[i*STRIDE + DIM + k] -= (xrij*temp1);
     posVel[j*STRIDE + DIM + k] +=  (xrij*temp1);
   }
@@ -412,23 +419,10 @@ void hardSphere::edmd()
   double tmp7=0.0; int i13, i14, i15;
   double tmp8, tmp9, tmp10, dt=0.0;
 
-  /*
-  ** First determine the earliest collision. [Automatically from the map list.]
-  ** Recalculate the time of collision between the pair of particles.
-  ** Check if they are really colliding using the overlap function.
-  ** If not colliding, propagate the particle for the given instant of time, then recalculate the collision time. Propagate it. Now check if the both the collision time is greater than the next collision time in the list.
-  ** If it is not greater, reconstruct the collision list and start the simulation.
-  ** After the collision check, if they are moving away.
-  ** Now, the time keeping and the condition checking for the collision to happend there.
-  */
   tmp7 = cseq.begin()->first;
   dt = tmp7 - globT;
   tie(i13, i14, i15) = cseq.begin()->second;
   minCollTime[0] = 0; //Initialization of the array
-  /*cout<<"\nFrom edmd";
-  cout<<"\nGlobal time: "<<globT;
-  cout<<"\n collTime: "<<tmp7<<"\t First Particle:  "<<i13<<"\t Second particle: "<<i14<<"\t Image: "<<i15<<"\tdt: "<<dt;
-  */
   //If wall collision.
   if(i15<0)
   {
@@ -436,21 +430,13 @@ void hardSphere::edmd()
     tie(tmp8, i13, i14, i15) = pwCollTime(i13, globT);
     dt = tmp8 - globT;
     globT = tmp8;
-    /*if(tmp8!=tmp7)
-    { ppCollInit(box, p, globT);
-      tie(tmp8, i13, i14, i15) = pwColl(box, p, i13, globT);
-    }
-    */
-    //cout<<"\n Once again time is calculated here...\n";
-    //cout<<"\nGlobal time: "<<globT;
-    //cout<<"\n collTime: "<<tmp8<<"\t First Particle:  "<<i13<<"\t Second particle: "<<i14<<"\t Image: "<<i15<<"\tdt: "<<dt;
-    //cout<<"\nPropagate by dt: "<<dt;
+
     particleToWallPropagate(i13, i14, i15, dt);
     //cout<<"\nUpdating time of collision...";
     collTableUpdate(i13, globT);
   }
   else {
-    //if particle collision
+    //if particle collision recalculate the time once again.
     tie(tmp9, i13, i14, i15) = ppCollTime(i13, i14, globT);
     dt = tmp9 - globT;
     globT = tmp9;
@@ -473,7 +459,7 @@ void hardSphere::edmd()
     }
     */
   }
-  if(globT>100000)  {
+  if(globT>infinity)  {
     //Reinitializing collision table, as precautionary measure.
     globT0 += globT;
     globT  = 0;
