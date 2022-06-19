@@ -7,7 +7,7 @@ g++ -o3 edmdMain.cpp -o edmdMain.o
 #for npa in 75000
 #for npa in 100 200
 #for npa in 10000 25000 50000 75000 100000
-for npa in 1000
+for npa in 10
 #for npa in 100000
 do
   #for ph in 0.0010 0.0100 0.1 0.1500 0.2000 0.2500 0.3000
