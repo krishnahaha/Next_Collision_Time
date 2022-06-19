@@ -229,7 +229,7 @@ tuple<double, int, int, int> hardSphere::ppCollTime(int i, int j, double globTim
         }
 
         //Comparing the collision times.
-        if(tmp<tmptmp)  {
+        if(tmp<tmptmp) {
           tmptmp = tmp;
           i3 = imgCnt;
         }
@@ -285,11 +285,11 @@ void hardSphere::velUpdate(int i, int j, int imJ) {
   int imx, imy, imz, imtmp;
 
   auto start5 = std::chrono::system_clock::now();
-  imz = imJ%2; imtmp = imJ/2;
+  imz = imJ%2  ; imtmp = imJ/2;
   imy = imtmp%2; imtmp = imtmp/2;
   imx = imtmp%2;
-  //cout<<"\nImg index: "<<imJ;
-  //cout<<"\timz, imy, imx: "<<imz<<"\t"<<imy<<"\t"<<imx;
+  cout<<"\nImg index: "<<imJ;
+  cout<<"\timz, imy, imx: "<<imz<<"\t"<<imy<<"\t"<<imx;
 
   //Velocity update between two particles i and j.
   xrij = posVel[i*STRIDE + 0] - posVel[j*STRIDE + 0];
