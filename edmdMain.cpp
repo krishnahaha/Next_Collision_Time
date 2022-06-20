@@ -60,7 +60,7 @@ using namespace std;
 #include "functions/initPosVel.h"
 #include "functions/eneForce.h"
 #include "functions/saveData.h"
-#include "functions/hardSphere.cpp"
+//#include "functions/hardSphere.cpp"
 
 
 int main(int argc, char *argv[])

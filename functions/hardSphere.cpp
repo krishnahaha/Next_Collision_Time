@@ -46,6 +46,7 @@ Index:
   ** int checkOverlap()
   ** void edmd()
 */
+#include "../functions/hardSphere.h"
 
 void hardSphere::printEfficiencyReport()  {
   cout<<"\n#### ALL TIME IN MICROSECONDS #####";

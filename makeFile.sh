@@ -1,20 +1,15 @@
 #Script file to compile, pass parameters and run the simulation for a hard sphere event driven molecular dynamics simulation.
+#Edit the CMakeLists.txt file to set up the file dependencies needed. This change is needed whenever a compilation flags are modified.
 
-rm edmdMain.o
-g++ -o3 edmdMain.cpp -o edmdMain.o
+cmake .
+make
+mv edmdMain Makefile cmake_install.cmake CMakeCache.txt ./build
 
-#for npa in 10000 25000 50000 100000
-#for npa in 75000
-#for npa in 100 200
-#for npa in 10000 25000 50000 75000 100000
+#Creation of the parameter file.
 for npa in 10
-#for npa in 100000
 do
-  #for ph in 0.0010 0.0100 0.1 0.1500 0.2000 0.2500 0.3000
-  #for ph in 0.0500
-  #for ph in 0.0010 0.0050 0.0100 0.0500 0.1000 0.1500 0.2000 0.2500 0.3000
-for ph in 0.0010
-do
+  for ph in 0.0010
+  do
     cd ./functions
     rm parameter.par
 
@@ -27,10 +22,11 @@ do
     echo "nCollSave 1000">>parameter.par
     echo "nCollIg 10000">>parameter.par
 
-    cd ../
+    cd ../build
     #valgrind --track-origins=yes --leak-check=full ./edmdMain.o './functions/parameter.par'
-    ./edmdMain.o './functions/parameter.par'
-    #>>outputFile_Phi_${ph}_npart_${npa}_withoutO3Run2 &
+    ./edmdMain '../functions/parameter.par'
+    #>>outputFile_Phi_${ph}_npart_${npa}_O3Run1 &
     #sleep 10
+    cd ../ #Come to the main directory.
   done
 done

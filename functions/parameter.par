@@ -1,4 +1,4 @@
-npart 1000
+npart 10
 dim 3
 nColl 1000
 nInit 1
