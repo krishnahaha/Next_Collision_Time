@@ -205,18 +205,80 @@ void hardSphere::imageFunction(int j) {
 ////////////////// particleParticleColl ///////////////////
 
 tuple<double, int, int, int> hardSphere::ppCollTime(int i, int j, double globTime)  {
-  double rij2, vij2, bij, tmp, xrij, xvij, tmp1, tmp2, tnext,deltaT, fdotHs, fHs;
-  int i1, i2, i3;
+  double rij2, vij2, bij, tmp, rijx, rijxx, rijy, rijyy, rijz, rijzz, vijx, vijy, vijz,imgJx, imgJy, imgJz;
+  double tmp1, tmp2, tmptmp=infinity;
+  int i3=0, imgCnt=0;
 
   auto start4 = std::chrono::system_clock::now();
-  imgCseq.clear();
+  /*imgCseq.clear();
 
   //Calculate the image of all j. They all will have same velocity.
-  imageFunction(j);
+  //imageFunction(j);
 
   //Calculate the collision time for each i and imJ
-  for (int imJ = 0; imJ<27; imJ++)  {
-    rij2 = 0,vij2 = 0,bij=0,tmp = 0,xrij = 0.0,xvij=0.0;
+  //for (int imJ = 0; imJ<27; imJ++)  {
+  //  rij2 = 0,vij2 = 0,bij=0,tmp = 0,xrij = 0.0,xvij=0.0;
+  */
+
+  rijxx=posVel[i*STRIDE]-posVel[j*STRIDE];
+  rijyy=posVel[i*STRIDE+1]-posVel[j*STRIDE+1];
+  rijzz=posVel[i*STRIDE+2]-posVel[j*STRIDE+2];
+  vijx=posVel[i*STRIDE+DIM]-posVel[j*STRIDE+DIM];
+  vijy=posVel[i*STRIDE+DIM+1]-posVel[j*STRIDE+DIM+1];
+  vijz=posVel[i*STRIDE+DIM+2]-posVel[j*STRIDE+DIM+2];
+
+  for(int k=-1; k<=1; k++)  {
+    for(int l=-1; l<=1; l++)  {
+      for (int m=-1; m<=1; m++) {
+        //Do it manually for the three directions.
+        imgJx= k*boxLen;
+        imgJy= l*boxLen;
+        imgJz= m*boxLen;
+        rijx = rijxx-imgJx;
+        rijy = rijyy-imgJy;
+        rijz = rijzz-imgJz;
+        bij = rijx*vijx + rijy*vijy + rijz*vijz;
+        vij2 = vijx*vijx + vijy*vijy + vijz*vijz;
+        rij2 = rijx*rijx + rijy*rijy + rijz*rijz;
+
+        //Check if they are approaching.
+        if(bij >= 0)  {
+          tmp = infinity;
+          //imgCseq[tmp] = tuple<int, int, int>(i, j, imJ);
+        }
+        else if( rij2 < 1-null) {
+          //No need of && bij<0, it is already taken into account due to the else if condition.
+          //check if overlapping.Make them to exchange their velocities by assigining the global Time as a time of collision.
+          tmp = globTime;
+          cout<<"\n\nOverlapping particles\ti= "<<i<<"\tj= "<<j<<"\tdistance: "<<(sqrt(rij2) - 1);
+          //imgCseq[tmp] = tuple<int, int, int>(i, j, imJ);
+        }
+        else if( (bij*bij - vij2*(rij2 - 1)) < 0 )  {
+          //Check if the discriminant is negative.
+          tmp = infinity; //cout<<"\t D<0";
+          //imgCseq[tmp] = tuple<int, int, int>(i, j, imJ);
+        }
+        else
+        {
+          //Calculate the smallest time for the two particles to have separation sigma.
+          tmp1 = rij2 - 1; //cout<<"\ntmp1 "<<tmp1;
+          tmp2 = -bij + sqrt(bij*bij - vij2*tmp1); //cout<<"\t"<<tmp2;
+          tmp = globTime + (tmp1/tmp2); //cout<<"\t"<<tmp;
+          //imgCseq[tmp] = tuple<int, int, int>(i, j, imJ);
+        }
+        //Comparision
+        if(tmp<tmptmp)  {
+          tmptmp=tmp;
+          i3=imgCnt;
+        }
+        imgCnt++;
+      }//m ends.
+    }//l ends.
+  }//k ends.
+  ppReturn = make_tuple(tmptmp, i, j, i3 );
+  /*
+
+  }
     for(int k = 0; k<DIM; k++)  {
       xrij = posVel[i*STRIDE + k] - imgPos[imJ*DIM + k];
 
@@ -265,7 +327,7 @@ tuple<double, int, int, int> hardSphere::ppCollTime(int i, int j, double globTim
     tmp = globTime;
     imgCseq[tmp] = tuple<int, int, int>(i, j, imJ);
     }
-    */
+
   }//image collision time completed.
 
   //Take the minimum of the collision time with the images.
@@ -275,6 +337,7 @@ tuple<double, int, int, int> hardSphere::ppCollTime(int i, int j, double globTim
   //Make a tuple out of these three and then return the value there.
   ppReturn = make_tuple(tnext, i1, i2, i3 );
   //cout<<"\t tnext: "<<tnext; cout<<"\t ijnext: "<<ijnext.first<<"\t j "<<j<<"\t imJ  "<<ijnext.second<<"\t";
+  */
   auto end4 = std::chrono::system_clock::now();
   ppCollTimeT += std::chrono::duration_cast<std::chrono::microseconds>(end4 - start4).count();
 
@@ -317,24 +380,48 @@ void hardSphere::collTableInit(double globTime) {
 
 //////////////// velUpdate //////////////////////
 void hardSphere::velUpdate(int i, int j, int imJ) {
-  double xrij, xvij, bij, rij2;
+  double rij2, vij2, bij, tmp, rijx, rijy, rijz, vijx, vijy, vijz;
+  int imJx, imJy, imJz, imJj=imJ;
   auto start5 = std::chrono::system_clock::now();
+  imJx = imJj%3 -1; imJj=imJj/3;
+  imJy = imJj%3 -1; imJj = imJj/3;
+  imJz = imJj%3 -1;
 
+  rijx=posVel[i*STRIDE]-posVel[j*STRIDE]-imJx*boxLen;;
+  rijy=posVel[i*STRIDE+1]-posVel[j*STRIDE+1]- imJy*boxLen;
+  rijz=posVel[i*STRIDE+2]-posVel[j*STRIDE+2]-imJz*boxLen;
+  vijx=posVel[i*STRIDE+DIM]-posVel[j*STRIDE+DIM];
+  vijy=posVel[i*STRIDE+DIM+1]-posVel[j*STRIDE+DIM+1];
+  vijz=posVel[i*STRIDE+DIM+2]-posVel[j*STRIDE+DIM+2];
+
+  bij = rijx*vijx + rijy*vijy + rijz*vijz;
+  vij2 = vijx*vijx + vijy*vijy + vijz*vijz;
+  rij2 = rijx*rijx + rijy*rijy + rijz*rijz;
   //Velocity update between two particles i and j.
-  imageFunction(j);
-  xrij = 0.0, xvij = 0.0, bij = 0, rij2 = 0.0;
-  for(int k=0; k<DIM; k++)  {
+  //imageFunction(j);
+
+  /*for(int k=0; k<DIM; k++)  {
     //Get the distance between the particle and the image.
     xrij = posVel[i*STRIDE + k] - imgPos[imJ*DIM + k];
     xvij = posVel[i*STRIDE + DIM + k] - posVel[j*STRIDE + DIM + k];
     bij += xrij*xvij; rij2 += xrij*xrij;
   }
+
   double temp1= bij/rij2;
   for(int k = 0; k<DIM; k++)  {
     xrij = posVel[i*STRIDE + k] - imgPos[imJ*DIM + k];
     posVel[i*STRIDE + DIM + k] -= (xrij*temp1);
     posVel[j*STRIDE + DIM + k] +=  (xrij*temp1);
   }
+  */
+  double temp1= bij/rij2;
+  posVel[i*STRIDE + DIM ] -= rijx*temp1;
+  posVel[j*STRIDE + DIM ] += rijx*temp1;
+  posVel[i*STRIDE + DIM +1] -= rijy*temp1;
+  posVel[j*STRIDE + DIM +1] += rijy*temp1;
+  posVel[i*STRIDE + DIM +2] -= rijz*temp1;
+  posVel[j*STRIDE + DIM +2] += rijz*temp1;
+
   auto end5 = std::chrono::system_clock::now();
   velUpdateT += std::chrono::duration_cast<std::chrono::microseconds>(end5 - start5).count() ;
 
