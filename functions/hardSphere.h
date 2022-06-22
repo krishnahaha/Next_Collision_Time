@@ -90,7 +90,7 @@ private:
   tuple<double, int, int, int>pwReturn;
   tuple<int, int, int> ijnext;
   tuple<double, int, int, int> ppReturn;
-  map <double, tuple<int, int, int> > imgCseq;
+  //map <double, tuple<int, int, int> > imgCseq;
   map< double, tuple<int,int, int> >cseq;
 
   //vectors

@@ -30,7 +30,7 @@ do
     cd ../
     #valgrind --track-origins=yes --leak-check=full ./cellDivEdmd.o './functions/parameter.par'
     ./edmdMain.o './functions/parameter.par'
-    #>>outputFile_Phi_${ph}_npart_${npa}_withoutO3Run2 &
+    #>>outputFile_Phi_${ph}_npart_${npa}_Run1 &
     #sleep 10
   done
 done

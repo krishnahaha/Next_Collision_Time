@@ -205,9 +205,10 @@ void hardSphere::imageFunction(int j) {
 ////////////////// particleParticleColl ///////////////////
 
 tuple<double, int, int, int> hardSphere::ppCollTime(int i, int j, double globTime)  {
-  double rij2, vij2, bij, tmp, rijx, rijxx, rijy, rijyy, rijz, rijzz, vijx, vijy, vijz,imgJx, imgJy, imgJz;
+  double rij2, rij2xx, vij2, bij, bijxx, tmp;
   double tmp1, tmp2, tmptmp=infinity;
   int i3=0, imgCnt=0;
+  double posVelxx[6], imgJx[3];
 
   auto start4 = std::chrono::system_clock::now();
   /*imgCseq.clear();
@@ -219,27 +220,56 @@ tuple<double, int, int, int> hardSphere::ppCollTime(int i, int j, double globTim
   //for (int imJ = 0; imJ<27; imJ++)  {
   //  rij2 = 0,vij2 = 0,bij=0,tmp = 0,xrij = 0.0,xvij=0.0;
   */
+  for(int dir=0; dir<2*DIM; dir++)  {
+    posVelxx[dir] = posVel[i*STRIDE+dir]-posVel[j*STRIDE+dir];
+  //  posVelxx[1] = posVel[i*STRIDE+1]-posVel[j*STRIDE+1];
+    //posVelxx[2] = posVel[i*STRIDE+2]-posVel[j*STRIDE+2];
+}
+//    posVelxx[DIM] = posVel[i*STRIDE+DIM]-posVel[j*STRIDE+DIM];
+  //  posVelxx[DIM+1] = posVel[i*STRIDE+DIM+1]-posVel[j*STRIDE+DIM+1];
+    //posVelxx[DIM+2] = posVel[i*STRIDE+DIM+2]-posVel[j*STRIDE+DIM+2];
 
+    bijxx = posVelxx[0]*posVelxx[DIM] + posVelxx[1]*posVelxx[DIM+1] + posVelxx[2]*posVelxx[DIM+2];
+
+    vij2 = 0.0;
+    rij2xx =0.0;
+    for(int dir=DIM;dir<DIM*2;dir++)
+      vij2 +=posVelxx[dir]*posVelxx[dir];
+      for(int dir=0;dir<DIM;dir++)
+      rij2xx += posVelxx[dir]*posVelxx[dir];
+
+    //vij2  = posVelxx[DIM]*posVelxx[DIM] + posVelxx[DIM+1]*posVelxx[DIM+1] + posVelxx[DIM+2]*posVelxx[DIM+2];
+
+    //rij2xx = posVelxx[0]*posVelxx[0] + posVelxx[1]*posVelxx[1] + posVelxx[2]*posVelxx[2];
+  //}
+  /*
   rijxx=posVel[i*STRIDE]-posVel[j*STRIDE];
   rijyy=posVel[i*STRIDE+1]-posVel[j*STRIDE+1];
   rijzz=posVel[i*STRIDE+2]-posVel[j*STRIDE+2];
   vijx=posVel[i*STRIDE+DIM]-posVel[j*STRIDE+DIM];
   vijy=posVel[i*STRIDE+DIM+1]-posVel[j*STRIDE+DIM+1];
   vijz=posVel[i*STRIDE+DIM+2]-posVel[j*STRIDE+DIM+2];
+  */
 
   for(int k=-1; k<=1; k++)  {
+    imgJx[0]= k*boxLen;
+    double t1 = bijxx - imgJx[0]*posVelxx[DIM];
+    double t3 = rij2xx +imgJx[0]*(imgJx[0] - 2*posVelxx[0]);
     for(int l=-1; l<=1; l++)  {
+      imgJx[1]= l*boxLen;
+      double t2 =t1-imgJx[1]*posVelxx[DIM+1];
       for (int m=-1; m<=1; m++) {
         //Do it manually for the three directions.
-        imgJx= k*boxLen;
-        imgJy= l*boxLen;
-        imgJz= m*boxLen;
-        rijx = rijxx-imgJx;
-        rijy = rijyy-imgJy;
-        rijz = rijzz-imgJz;
-        bij = rijx*vijx + rijy*vijy + rijz*vijz;
-        vij2 = vijx*vijx + vijy*vijy + vijz*vijz;
-        rij2 = rijx*rijx + rijy*rijy + rijz*rijz;
+         imgJx[2]= m*boxLen;
+        /*
+        bij=bijxx, rij2=rij2xx;
+        for(int dim=0; dim<DIM; dim++)  {
+          bij -= imgJx[dim]*posVelxx[DIM+dim];
+          rij2 +=  imgJx[dim]*(imgJx[dim] - 2*posVelxx[dim]);
+        }*/
+        bij =  t2 - imgJx[2]*posVelxx[DIM+2];
+
+        rij2 = t3 +  imgJx[1]*(imgJx[1] - 2*posVelxx[1]) + imgJx[2]*(imgJx[2] - 2*posVelxx[2]);
 
         //Check if they are approaching.
         if(bij >= 0)  {
@@ -553,7 +583,7 @@ void hardSphere::edmd()
 
     //kineticEne[nColl] = calcKineticEne();
     //impactSeparation[nColl] = calcImpactSeparation(i13, i14);
-    minCollTime[nColl] = globT + globT0;
+    //minCollTime[nColl] = globT + globT0;
     /*if(nColl >= nCollIgnore)  {
       freeFlightTime[i13].push_back(globT + globT0);
       freeFlightTime[i14].push_back(globT + globT0);
