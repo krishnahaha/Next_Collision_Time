@@ -46,7 +46,6 @@ Index:
   ** int checkOverlap()
   ** void edmd()
 */
-#include "../functions/hardSphere.h"
 
 void hardSphere::printEfficiencyReport()  {
   cout<<"\n#### ALL TIME IN MICROSECONDS #####";
@@ -78,6 +77,7 @@ void hardSphere::printCollTable(int limit) {
     it++;
   }
 }
+
 
 /////////////// impactSeparations //////////////
 double hardSphere::calcImpactSeparation(int i1, int j1) {
@@ -181,29 +181,32 @@ tuple<double, int, int, int> hardSphere::pwCollTime(int i, double globTime) {
 
 tuple<double, int, int, int> hardSphere::ppCollTime(int i, int j, double globTime)  {
   double rij2, vij2, bij, xrij, yrij, zrij, xvij, yvij, zvij;
-  double tmp, tmp1, tmp2, tmptmp=infinity;
+  double delTim, tmp1, tmp2, tmptmp=infinity;
   int imgCnt = 0, i3 = 0;
 
   auto start4 = std::chrono::system_clock::now();
 
   //Calculate the collision time for original position and the minimum image in all the three directions.
-  for (int ii=0; ii<2; ii++)  {
+  for (int ii=0; ii<2; ii++) {
     xrij = posVel[i*STRIDE + 0] - posVel[j*STRIDE + 0];
     xvij = posVel[i*STRIDE + DIM + 0] - posVel[j*STRIDE + DIM + 0];
-    if(ii==1)
+    if(ii==1){
       xrij = xrij - boxLen*lround(xrij*boxLenInv);
+    }
 
     for(int jj=0; jj<2; jj++) {
       yrij = posVel[i*STRIDE + 1] - posVel[j*STRIDE + 1];
       yvij = posVel[i*STRIDE + DIM+ 1] - posVel[j*STRIDE + DIM + 1];
-      if(jj==1)
+      if(jj==1) {
         yrij = yrij - boxLen*lround(yrij*boxLenInv);
+      }
 
       for(int kk=0; kk<2; kk++) {
         zrij = posVel[i*STRIDE + 2] - posVel[j*STRIDE + 2];
         zvij = posVel[i*STRIDE + DIM + 2] - posVel[j*STRIDE + DIM + 2];
-        if(kk==1)
+        if(kk==1) {
           zrij = zrij - boxLen*lround(zrij*boxLenInv);
+        }
 
         bij  = xvij*xrij + yvij*yrij + zvij*zrij;
         rij2 = xrij*xrij + yrij*yrij + zrij*zrij;
@@ -211,29 +214,31 @@ tuple<double, int, int, int> hardSphere::ppCollTime(int i, int j, double globTim
 
         //Check if they are approaching.
         if(bij >= 0) {
-          tmp = infinity;
+          delTim = infinity;
         }
-        else if( rij2 <= 1-null) {
+        else if( rij2 < 1) {
           //check if overlapping.Make them to exchange their velocities by assigining the global Time as a time of collision.
-          tmp = globTime;
-          cout<<"\n\nOverlapping particles\ti= "<<i<<"\tj= "<<j<<"\tOvp dist: "<<(1-sqrt(rij2));
+          delTim = globTime;
+          cout<<"\n\n#############################Overlapping particles############################################\ti= "<<i<<"\tj= "<<j<<"\tOvp dist: "<<(1-sqrt(rij2));
+          printPosVel();
         }
         else if( (bij*bij - vij2*(rij2 - 1)) < 0 )  {
           //Check if the discriminant is negative.
-          tmp = infinity;
+          delTim = infinity;
         }
         else  {
           //Calculate the smallest time for the two particles to have separation sigma.
           tmp1 = rij2 - 1;
           tmp2 = -bij + sqrt(bij*bij - vij2*tmp1);
-          tmp = globTime + (tmp1/tmp2);
+          delTim = globTime + (tmp1/tmp2);
         }
 
-        //Comparing the collision times.
-        if(tmp<tmptmp) {
-          tmptmp = tmp;
+        if(delTim < tmptmp) {
+          //Comparing the collision times.
+          tmptmp = delTim;
           i3 = imgCnt;
         }
+        //cout<<"\nFrom ppCollTime i: "<<i<<"\tj: "<<j<<"\timgCnt: "<<imgCnt<<"\t delTim: "<<delTim;
         imgCnt++;
       }//kk ends.
     }//jj ends.
@@ -268,8 +273,7 @@ void hardSphere::collTableInit(double globTime) {
     }
   }
   //Determinig the collision with the wall time there.
-  for(int i=0; i<npart; i++)
-  {
+  for(int i=0; i<npart; i++)  {
     tie(tmp4, i4, i5, i6) = pwCollTime(i, globTime);
     cseq[tmp4] = tuple<int, int, int>(i4, i5, i6);
     clist[i].push_back(tmp4);
@@ -277,7 +281,7 @@ void hardSphere::collTableInit(double globTime) {
   tmp5 = cseq.begin()->first;
   ijnext = cseq.begin()->second;
 
-  cout<<"\n\nThe first collision is in between, i: "<<get<0>(ijnext)<<"\tj: "<<get<1>(ijnext)<<"\tWith image of J index :"<<get<2>(ijnext) <<"\tAt: "<<tmp5;
+  //cout<<"\n\nThe first collision is in between, i: "<<get<0>(ijnext)<<"\tj: "<<get<1>(ijnext)<<"\tWith image of J index :"<<get<2>(ijnext) <<"\tAt: "<<tmp5;
 }//collTableInit ends.
 
 //////////////// velUpdate //////////////////////
@@ -289,8 +293,8 @@ void hardSphere::velUpdate(int i, int j, int imJ) {
   imz = imJ%2  ; imtmp = imJ/2;
   imy = imtmp%2; imtmp = imtmp/2;
   imx = imtmp%2;
-  cout<<"\nImg index: "<<imJ;
-  cout<<"\timz, imy, imx: "<<imz<<"\t"<<imy<<"\t"<<imx;
+  //cout<<"\nImg index: "<<imJ;
+  //cout<<"\timz, imy, imx: "<<imz<<"\t"<<imy<<"\t"<<imx;
 
   //Velocity update between two particles i and j.
   xrij = posVel[i*STRIDE + 0] - posVel[j*STRIDE + 0];
@@ -336,8 +340,7 @@ void hardSphere::collTableUpdate(int i, double globTime)  {
   cseq.erase(infinity);
   clist[i].clear();
   for(int j = 0; j<npart; j++)  {
-    if( j!=i)
-    {
+    if( j!=i)  {
       tie(ct, i7, i8, i9) = ppCollTime(i, j, globTime); //Calculate the particle-particle collision time.
       if(ct < infinity)  {
         //Store it in the ordered list and the each particle collision array. ct is the key here.
@@ -390,18 +393,17 @@ int hardSphere::checkOverlap()  {
 
 double globT0 = 0.0, globT = 0; //These are needed to be a global variable.
 ////////////////// edmd() //////////////////////
-void hardSphere::edmd()
-{
+void hardSphere::edmd() {
   double tmp7=0.0; int i13, i14, i15;
   double tmp8, tmp9, tmp10, dt=0.0;
 
   tmp7 = cseq.begin()->first;
   dt = tmp7 - globT;
   tie(i13, i14, i15) = cseq.begin()->second;
+  //cout<<"\nCollision between: i: "<<i13<<"\tj: "<<i14<<"\tdir: "<<i15<<"\tdt: "<<dt;
   minCollTime[0] = 0; //Initialization of the array
   //If wall collision.
-  if(i15<0)
-  {
+  if(i15<0)  {
     //If one particle crosses the box, bring it back from the other side, previously calculated time of collisions becomes invalid, recalculate the collision times for this particle.
     tie(tmp8, i13, i14, i15) = pwCollTime(i13, globT);
     dt = tmp8 - globT;
@@ -414,6 +416,9 @@ void hardSphere::edmd()
   else {
     //if particle collision recalculate the time once again.
     tie(tmp9, i13, i14, i15) = ppCollTime(i13, i14, globT);
+    //cout<<"\nPosVel before collision:";
+    //cout<<"\nCollision between i: "<<i13<<"\tj: "<<i14<<"\timJ: "<<i15;
+    //printPosVel();
     dt = tmp9 - globT;
     globT = tmp9;
     particlePropagate(dt);
@@ -422,19 +427,22 @@ void hardSphere::edmd()
     //Update the collision table.
     collTableUpdate(i13, globT);
     collTableUpdate(i14, globT);
+    //cout<<"\nPosVel after collision:";
+    //printPosVel();
     nColl++;
 
     /////////////// CALCULATING OBSERVABES //////////////
 
-    //kineticEne[nColl] = calcKineticEne();
-    //impactSeparation[nColl] = calcImpactSeparation(i13, i14);
+    kineticEne[nColl] = calcKineticEne();
+    impactSeparation[nColl] = calcImpactSeparation(i13, i14);
     minCollTime[nColl] = globT + globT0;
-    /*if(nColl >= nCollIgnore)  {
+    if(nColl >= nCollIgnore)  {
       freeFlightTime[i13].push_back(globT + globT0);
       freeFlightTime[i14].push_back(globT + globT0);
     }
-    */
   }
+  //cout<<"\nFrom external of ppcoll in edmd()";
+  //printPosVel();
   if(globT>infinity)  {
     //Reinitializing collision table, as precautionary measure.
     globT0 += globT;
@@ -442,4 +450,5 @@ void hardSphere::edmd()
     collTableInit(0.0);
     cout<<"\nGlobal time reinitialized, globT0: "<<globT0;
   }
+
 }//edmd ends.

@@ -32,24 +32,6 @@
 
 
 /*Create a class for the hardSphere object having functions to perform the edmd simulation and the data variables to store the description of the system.*/
-#include<stdio.h>
-#include<string.h>
-#include <cstdio>
-#include<iostream>
-#include<cmath>
-#include<fstream>
-#include<math.h>
-#include<time.h>
-#include<iterator>
-#include<map>
-#include<vector>
-#include<tuple>
-#include <chrono>
-
-using namespace std;
-#define DIM 3
-#define STRIDE 6
-#define IMGN 27
 
 class hardSphere
 {

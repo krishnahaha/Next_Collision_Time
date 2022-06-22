@@ -20,7 +20,7 @@ do
 
     echo "npart ${npa}">>parameter.par
     echo "dim 3">>parameter.par
-    echo "nColl 100">>parameter.par
+    echo "nColl 10000">>parameter.par
     echo "nInit 1">>parameter.par
     echo "phi ${ph}">>parameter.par
     echo "vInit 1">>parameter.par

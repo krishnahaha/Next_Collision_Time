@@ -1,0 +1,8 @@
+
+git log --reflog: Get all the logs in git.
+git reflog : History of commands done by git.
+git show changeId : Shows the change done in the commit.
+git commit --amend -m "change message" : This ammends the previous commit and changes the previous committ id and the commit message as well.
+git stash : temporiraly saves the changes made. It does not commits.
+git stash list: List of stashed changes made.
+git stash pop : To put the changes in the current working directory.

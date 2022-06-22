@@ -35,6 +35,7 @@
 #define DIM 3
 #define STRIDE 6
 #define IMGN 27
+
 #include<stdio.h>
 #include<string.h>
 #include <cstdio>
@@ -60,7 +61,7 @@ using namespace std;
 #include "functions/initPosVel.h"
 #include "functions/eneForce.h"
 #include "functions/saveData.h"
-//#include "functions/hardSphere.cpp"
+#include "functions/hardSphere.cpp"
 
 
 int main(int argc, char *argv[])
@@ -90,6 +91,8 @@ int main(int argc, char *argv[])
   //hs.printCollTable(10);
   //cout<<"\n Initialization is sucessful!!!";
   //Start the event driven molecular dynamics.
+  cout<<"\nInitial pos vel";
+  hs.printPosVel();
   while(hs.nColl<p.nColl)
   {
     //auto start = std::chrono::system_clock::now();
@@ -119,12 +122,10 @@ int main(int argc, char *argv[])
   cout<<"\nTime spend in saving the files:"<<saveTime<<"mu_s";
 
   //FINAL SAVE OF OBSERVABLES.
-  /*
   hs.savePosVel(); hs.saveMinCollTime();
   hs.saveFreeFlightTime(); hs.saveKineticEne();
   hs.saveImpactSeparation();
   hs.saveCollTable();
-  */
 
   cout<<"\n\n!!! Congratulations EDMD successfull !!!\n\n";
   return 0;
