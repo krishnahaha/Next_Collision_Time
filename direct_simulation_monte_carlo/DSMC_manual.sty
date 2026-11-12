@@ -1,0 +1,87 @@
+\documentclass[12pt]{article} 
+%\documentstyle[12pt]{article}
+\usepackage{graphicx}% Include figure files  
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{comment}
+%\usepackage[toc,page]{appendix}
+%\usepackage{fontspec}
+%\setmainfont{Times New Roman}
+\usepackage{subcaption}
+\usepackage{epstopdf} %converting to PDF
+%\usepackage{multirow} %for multirow/Table
+%\usepackage[table,x11names]{xcolor} %Row color
+\usepackage{float} %to place the Fig. where it is, us H
+\usepackage{mathrsfs}
+\setlength{\textheight}{23cm}
+\setlength{\textwidth}{17cm}
+\pagestyle{headings}
+\setlength{\topmargin}{-0.4cm}
+\raggedbottom
+\abovedisplayskip=3mm
+\belowdisplayskip=3mm
+\abovedisplayshortskip=0mm
+\belowdisplayshortskip=2mm
+\setlength{\parskip}{0.13cm}
+\oddsidemargin=-0.3cm
+%\input epsf
+\usepackage{color}
+\usepackage{natbib}
+
+\newcommand{\marktext}[1]{\textcolor{red}{{\bf #1}}}
+\newcommand\beq{\begin{equation}}
+\newcommand\eeq{\end{equation}}
+
+\begin{document}
+%\twocolumn
+\begin{center}
+\Large\textbf{ Direct Simulation Monte Carlo }\\
+\Large\textbf{Reference Manual}
+\end{center}
+
+\section{Aim}
+
+Write a C++ serial code for Direct Simulation Monte Carlo by Saturday ( 01/04/2023, 2100 Hrs )
+
+\begin{enumerate}
+    \item 
+\end{enumerate}
+Step 1: Reading about the theory behind the algorithm (20 hrs), Done but still need some more time. 10hrs approx more.
+    a) What is DSMC?
+    b) Why does it works, theoretical justification.
+    c) When will it fail and why?
+    d) Where it is applied?
+    e) Current status of DSMC.
+
+***** Basic questions in DSMC *****
+Each particle represents N_ef no. of particles ~ at same position and ~ at moving with the same velocity
+    Meaning: The line of apls is choosen randomly ( the inclination is 90 - 180 wrt relative velocity ), hence the direction of a particle changes randomly, In real systems, its deterministic, but if a system undergoes N_ef number of deterministic collisions, its final direction after this N_ef number of collisions can be approximated by a random line of alps, hence this effective term is justified to use. (MY_THOUGHTS)
+    
+    Implementation: Number of collisions executed in a sub-cell in time Delta t = N_ef * Collision Frequency of cell * Delta t.
+
+DSMC is ~ equivalent to solving the Boltzmann Equation.
+    Meaning: 
+
+    Implementation: 
+
+In each cell, a set of representative collision is processed at each time step.
+    Meaning: 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Step 2: Type the algorithm (4 hrs)
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Step 3: Code (24 hrs)
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Step 4: Data generation 
+
+
+\end{document}

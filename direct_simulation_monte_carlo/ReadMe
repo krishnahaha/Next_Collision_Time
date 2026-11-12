@@ -1,0 +1,19 @@
+Aim: A DSMC code for simulations.
+
+Somehow the particle is exceeding the box boundaries in the z-direction. Needs to be fixed.
+
+
+
+25/04/2023, Tuesday 
+To calculate the g(r).
+
+
+
+
+
+19/04/2023, 1820hrs, Wednesday.
+I need to calculate the pressure for the hard-spheres in the DSMC simulation. The claim is that the same virial expression is applicable for the DSMC simulations as well, but need to check why it is valid, as there is no dynamics involved in the DSMC simulations there.
+
+How the system parameters are decided.
+1) At least 50 particles per cell, hence the cell length has to be decided in such way.
+2) The evolution time step should be a fraction of the the mean Free Flight Time for each particle.

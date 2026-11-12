@@ -1,0 +1,9 @@
+npart 1000188
+phi 0.20
+temp 1.0
+lambdaMult 1
+maxTime 1
+dtFrac 0.2
+wallTemp 1.0
+wallVel 0.2
+trial 0
