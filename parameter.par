@@ -1,0 +1,11 @@
+npart 55296
+phi 0.4500
+temp 1.0
+maxtime 100
+sampleObsInterval 1
+eps 1
+posInitType 2
+shellSize 1.5
+fileName snapshot_end_n55296_pf0.4500_maxTime1000.0.dat
+useThermostat 0
+trial 0
