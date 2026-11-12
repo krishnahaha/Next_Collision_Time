@@ -1,0 +1,116 @@
+Its working now. The following changes were required.
+1. In neighbourlist, the update time.
+2. Remove event, the case when there is noting to the left has to be taken care.
+
+/***********************************************************************************************************************************/
+ Creating neighbor list
+ The eventTime: 0.437568         eventType: 2    ei->index: 56   ei->parent: 33
+ pi: 56 Added to cell list 22
+ cellX[0]4  4  5
+ no. of neighbours: 12
+ tcol1 : 0.0512176       *tneig: 0.109084
+ tcol1 : 0.0133094       *tneig: 0.0512176
+ dt: 0.0156918   refTime: 0.435185       eventTime: 0.450877     currentList: 47         dt: 0.0156918   eventsDeltaT: 0.00925926        listId: 48
+
+ Creating neighbor list
+ The eventTime: 0.437648         eventType: 1    ei->index: 33   ei->parent: 107
+ dr2 at collision: 1
+ tcol1 : 0.027706        *tneig: -nan
+ tcol1 : 0.0324527       *tneig: -nan
+ tcol1 : 0.209648        *tneig: -nan
+ dt: -nan        refTime: 0.435185       eventTime: -nan         currentList: 47         dt: -nan        eventsDeltaT: 0.00925926        listId: -2147483648
+
+
+
+
+
+
+
+
+
+/*******************************************************************************************************************************************************************/
+Creating neighbor list
+The eventTime: 0.437568         eventType: 2    ei->index: 56   ei->parent: 33
+pi: 56 Added to cell list 22
+cellX[0]4  4  5
+no. of neighbours: 12
+dt: 0.0156918   refTime: 0.435185       eventTime: 0.450877     currentList: 47         dt: 0.0156918   eventsDeltaT: 0.00925926        listId: 48
+
+Creating neighbor list
+The eventTime: 0.437648         eventType: 1    ei->index: 33   ei->parent: 107
+dr2 at collision: 1
+dt: -nan        refTime: 0.435185       eventTime: -nan         currentList: 47         dt: -nan        eventsDeltaT: 0.00925926        listId: -2147483648
+./runScript.sh: line 14:  2490 Segmentation fault      (core dumped) ./edmd parameter.par
+
+
+/***********************************************************************************************
+Creating neighbor list
+The eventTime: 0.437568         eventType: 2    ei->index: 56   ei->parent: 33
+pi: 56 Added to cell list 22
+cellX[0]4  4  5
+no. of neighbours: 12   listId: 48
+
+Creating neighbor list
+The eventTime: 0.437648         eventType: 1    ei->index: 33   ei->parent: 107
+dr2 at collision: 1     listId: -2147483648
+./runScript.sh: line 14:   365 Segmentation fault      (core dumped) ./edmd parameter.par
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************************************************/
+20/05/2023
+Some problem while checking for the null element in the cell list of the elements. Its not detecting if it is a null there or not.
+
+
+/******************************************************************************************************************************************************************************/
+17/05/2023
+1047 hrs
+All the neighborlist update events are happening, once the first collsion event happens, it overlaps the particles, this means the collision events are not getting scheduled properly.
+ei->index: is coming out to be zero for the neighborlist update, how can it be possibel, as for each particle we do the neighborlist update and it should show the index of the particle and not the 0 value. Some points I am missing here it seems...
+Why is the collision event not scheduled before the neighborlist update event for particle 18.
+There was an indexing error in calculating the neighborlist, nCellx[0] was there in all the three places of the loop, corrected it, still the particle 18 and 3 are overlapping here. Something is there which I am missing.
+
+1314hrs
+Seems the problem is in the neighborlist creating function. It is giving some random errors here and there. There is some problem in taking the remainder in the make neighborlist function I am using here.
+
+1545hrss
+Somehow the event time is coming out to be zero here. Not sure why is this happening here?
+
+1635 hrs
+There is problem in scheduling the collision events for the hard sphere particles. dr2 at collision is not == 1, hence some problem is there. Need to look into it there.
+
+1645 hrs
+The first event which is getting scheduled which is a collision event, the aprticles are gettign overlapped at the time of collision. The parent of the event is the root. Means there is an error in the event calender being implemented here. Need to do the recheck of the process here.
+
+Check create neighborlist, addEventToTree/EventList. Problem in bookeeping of the the neighborlist. Need to check this hypothesis.
+The erase loop is not working properly here, some problem is here, it is printing all the data elements which is not needed.
+
+1943 hrs
+The multiple times the same element gets inserted into the neighborlist. This is rectified. Still I am getting overlaps.
+
+2038 hrs 
+Find the neighborlist update time function and the and the findPairCollTime function if they return the correct output there.
+
+2253 hrs
+Checked removeEvent, createNeighbourList, findPairCollTime in GPT, still getting the overlap between the particles even on the first run. How to check it?
+/******************************************************************************************************************************************************************************/
+14/05/2023, 1138 hrs.
+The currentList count is getting increased before adding the particles to the binnary tree. It is corrected now.
+It seems there is a mistake in the calculation of distance between the pair of particles in the calculation of the collision time.
+
+11/05/2023
+Commented out the write event there in the function, the  simulation time is still not increasing here.
+
+
+08/05/23
+There is some problem I am getting in the make neighbourlist function. The function is throwing an segmentation fault when the neighbours are getting added there. Its not good there to see this.
+
+
+

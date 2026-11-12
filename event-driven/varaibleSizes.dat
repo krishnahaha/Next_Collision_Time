@@ -1,0 +1,8 @@
+DATATYPE        NUMBERS SIZE 
+double          13      104
+int             6       24
+unsigned int    2       8
+unsinged char   1       1
+uint8_t         3       3
+
+Total                   145
